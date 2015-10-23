@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin name="announcements">
+	<title>Announcements</title>
+	<summary>This plugin allows administrators to leave their messages/announcements to the Front End Block</summary>
+	<author>Intelliants LLC</author>
+	<contributor>Intelliants LLC</contributor>
+	<version>3.4.0</version>
+	<date>2015-09-01</date>
+	<compatibility>3.4</compatibility>
+
+	<phrases>
+		<phrase category="frontend" key="no_announcements_yet">No announcements yet.</phrase>
+		<phrase category="admin" key="announcements">Announcements</phrase>
+		<phrase category="admin" key="block_entries">Number of displayed entries on Frond End Block</phrase>
+		<phrase category="admin" key="random_entries">Dispay random entries</phrase>
+		<phrase category="admin" key="expire_date">Expire date</phrase>
+		<phrase category="admin" key="choose_expire_date">Please, choose expire date.</phrase>
+		<phrase category="admin" key="entry_added">Announcement added.</phrase>
+	</phrases>
+
+	<actions>
+		<action name="announcements" url="announcements/" icon="list" pages="announcemenst,announcements_add,announcements_edit">List</action>
+		<action name="announcements_add" url="announcements/add/" icon="plus" pages="announcements">Add Announcement</action>
+	</actions>
+
+	<adminpages>
+		<page group="content" name="announcements" order="55" url="announcements/" menus="menu">Announcements</page>
+		<page group="content" name="announcements_add" url="announcements/add/" action="add" parent="announcements">Add Announcement</page>
+		<page group="content" name="announcements_edit" url="announcements/edit/" action="edit" parent="announcements">Edit Announcement</page>
+	</adminpages>
+
+	<configgroup name="announcements">Announcements</configgroup>
+	<config group="announcements" name="announcements" type="divider">General</config>
+	<config group="announcements" name="entries_limit" type="text" description="Number of displayed entries on Frond End Block">6</config>
+	<config group="announcements" name="entries_order" type="select" values="random,date" description="Entries order by">date</config>
+
+	<blocks>
+		<block name="announcements" title="Announcements" collapsible="1" position="left" classname="panel-danger" order="-1" type="smarty" filename="plugin:announcements:block.announcements.tpl"><![CDATA[]]></block>
+	</blocks>
+
+	<hooks>
+		<hook name="phpCoreBeforePageDisplay" page_type="front" filename="plugins/announcements/includes/hook.latest-announcements.php"><![CDATA[]]></hook>
+	</hooks>
+
+	<install>
+		<sql>
+			<![CDATA[
+CREATE TABLE `{prefix}announcements` (
+	`id` int(8) NOT NULL auto_increment,
+	`member_id` int(8) NOT NULL,
+	`title` tinytext NOT NULL,
+	`body` text NOT NULL,
+	`date` datetime NOT NULL,
+	`expire_date` datetime NOT NULL,
+	`status` enum('inactive', 'active') NOT NULL,
+	`lang` char(2) NOT NULL,
+	PRIMARY KEY  (`id`)
+) {mysql_version};
+			]]>
+		</sql>
+	</install>
+
+	<uninstall>
+		<sql>
+			<![CDATA[
+DROP TABLE IF EXISTS `{prefix}announcements`;
+			]]>
+		</sql>
+	</uninstall>
+</plugin>
