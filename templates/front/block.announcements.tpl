@@ -1,11 +1,11 @@
 {if $entries}
-	<div class="media-items">
+	<div class="ia-items">
 		{foreach $entries as $post}
-			<div class="media">
-				<div class="media-body">
-					<h4 class="media-heading">{$post.title|escape:'html'}</h4>
+			<div class="ia-item ia-item--border-bottom an-post">
+				<div class="ia-item__content">
+					<h5 class="ia-item__title">{$post.title|escape:'html'}</h5>
+					<p class="an-post__date">{$post.date|date_format:$core.config.date_format}</p>
 					<p>{$post.body|escape:'html'}</p>
-					<p class="media-date">{$post.date|date_format:$core.config.date_format}</p>
 				</div>
 			</div>
 		{/foreach}

@@ -4,9 +4,9 @@
 	<summary>This plugin allows administrators to leave their messages/announcements to the Front End Block</summary>
 	<author>Intelliants LLC</author>
 	<contributor>Intelliants LLC</contributor>
-	<version>3.4.0</version>
-	<date>2015-09-01</date>
-	<compatibility>3.4</compatibility>
+	<version>4.0.0</version>
+	<date>2015-10-30</date>
+	<compatibility>4.0</compatibility>
 
 	<phrases>
 		<phrase category="frontend" key="no_announcements_yet">No announcements yet.</phrase>
@@ -35,7 +35,7 @@
 	<config group="announcements" name="entries_order" type="select" values="random,date" description="Entries order by">date</config>
 
 	<blocks>
-		<block name="announcements" title="Announcements" collapsible="1" position="left" classname="panel-danger" order="-1" type="smarty" filename="plugin:announcements:block.announcements.tpl"><![CDATA[]]></block>
+		<block name="announcements" title="Announcements" collapsible="1" position="left" classname="an an--info" order="-1" type="smarty" filename="block.announcements"><![CDATA[]]></block>
 	</blocks>
 
 	<hooks>
