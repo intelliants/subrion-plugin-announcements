@@ -1,172 +1,130 @@
 <?php
-//##copyright##
+/******************************************************************************
+ *
+ * Subrion - open source content management system
+ * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ *
+ * This file is part of Subrion.
+ *
+ * Subrion is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Subrion is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * @package Subrion\Plugin\Blog\Admin
+ * @link https://subrion.org/
+ * @author https://intelliants.com/ <support@subrion.org>
+ * @license https://subrion.org/license.html
+ *
+ ******************************************************************************/
 
-$iaAnnouncement = $iaCore->factoryPlugin('announcements', iaCore::ADMIN, 'announcement');
-
-$iaDb->setTable(iaAnnouncement::getTable());
-
-if (iaView::REQUEST_JSON == $iaView->getRequestType())
+class iaBackendController extends iaAbstractControllerModuleBackend
 {
-	switch ($pageAction)
-	{
-		case iaCore::ACTION_READ:
-			$output = $iaAnnouncement->gridRead($_GET,
-				array('title', 'expire_date','date', 'status'),
-				array('title' => 'like', 'status' => 'equal')
-			);
-			break;
+    protected $_name = 'announcement';
 
-		case iaCore::ACTION_EDIT:
-			$output = $iaAnnouncement->gridUpdate($_POST);
+    protected $_table = 'announcements';
 
-			break;
+    protected $_phraseAddSuccess = 'announcement_added';
 
-		case iaCore::ACTION_DELETE:
-			$output = $iaAnnouncement->gridDelete($_POST);
-	}
+    protected $_gridColumns = ['title', 'date_added', 'date_expire', 'status'];
 
-	$iaView->assign($output);
+    public function __construct()
+    {
+        parent::__construct();
+        $this->_path = IA_ADMIN_URL . 'announcements' . IA_URL_DELIMITER;
+    }
+
+    protected function _indexPage(&$iaView)
+    {
+        $iaView->grid('_IA_URL_modules/' . $this->getModuleName() . '/js/admin/index');
+    }
+
+    protected function _setDefaultValues(array &$entry)
+    {
+        $entry['title'] = $entry['body'] = '';
+        $entry['lang'] = $this->_iaCore->iaView->language;
+        $entry['date_added'] = $entry['date_expire'] = date(iaDb::DATETIME_FORMAT);
+        $entry['status'] = iaCore::STATUS_ACTIVE;
+        $entry['member_id'] = iaUsers::getIdentity()->id;
+    }
+
+    protected function _preSaveEntry(array &$entry, array $data, $action)
+    {
+        parent::_preSaveEntry($entry, $data, $action);
+
+        iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
+
+        if (!array_key_exists($entry['lang'], $this->_iaCore->languages)) {
+            $entry['lang'] = $this->_iaCore->iaView->language;
+        }
+
+        if (!utf8_is_valid($entry['title'])) {
+            $entry['title'] = utf8_bad_replace($entry['title']);
+        }
+
+        if (!utf8_is_valid($entry['body'])) {
+            $entry['body'] = utf8_bad_replace($entry['body']);
+        }
+
+        if ($entry['body']) {
+            $entry['body'] = iaSanitize::tags($entry['body']);
+        }
+
+        if (empty($entry['title'])) {
+            $this->addMessage('title_is_empty');
+        }
+
+        if (empty($entry['body'])) {
+            $this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('body')]), false);
+        }
+
+        if (empty($entry['date_expire']) || $entry['date_expire'] < date(iaDb::DATETIME_FORMAT)) {
+            $this->addMessage('choose_date_expire');
+        }
+
+        if (empty($entry['date_added'])) {
+            $entry['date_added'] = date(iaDb::DATETIME_FORMAT);
+        }
+
+        unset($entry['owner']);
+
+        return !$this->getMessages();
+    }
+
+    protected function _postSaveEntry(array &$entry, array $data, $action)
+    {
+        $iaCache = $this->_iaCore->factory('cache');
+        $iaCache->remove('announcements');
+
+        $iaLog = $this->_iaCore->factory('log');
+
+        $actionCode = (iaCore::ACTION_ADD == $action)
+            ? iaLog::ACTION_CREATE
+            : iaLog::ACTION_UPDATE;
+        $params = [
+            'module' => 'announcements',
+            'item' => 'announcement',
+            'name' => $entry['title'],
+            'id' => $this->getEntryId(),
+        ];
+
+        $iaLog->write($actionCode, $params);
+    }
+
+    protected function _assignValues(&$iaView, array &$entryData)
+    {
+        $iaUsers = $this->_iaCore->factory('users');
+        $owner = empty($entryData['member_id']) ? iaUsers::getIdentity(true) : $iaUsers->getInfo($entryData['member_id']);
+
+        $entryData['owner'] = $owner['fullname'] . " ({$owner['email']})";
+    }
 }
-
-if (iaView::REQUEST_HTML == $iaView->getRequestType())
-{
-	if (iaCore::ACTION_READ == $pageAction)
-	{
-		$iaView->grid('_IA_URL_plugins/announcements/js/admin/index');
-	}
-	elseif (in_array($pageAction, array(iaCore::ACTION_ADD, iaCore::ACTION_EDIT)))
-	{
-		$announcementEntry = array(
-			'lang' => $iaView->language,
-			'status' => iaCore::STATUS_ACTIVE
-		);
-
-		if (iaCore::ACTION_EDIT == $pageAction)
-		{
-			if (!isset($iaCore->requestPath[0]))
-			{
-				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-			}
-
-			$id = (int)$iaCore->requestPath[0];
-			$announcementEntry = $iaDb->row(iaDb::ALL_COLUMNS_SELECTION, iaDb::convertIds($id));
-			if (empty($announcementEntry))
-			{
-				return iaView::errorPage(iaView::ERROR_NOT_FOUND);
-			}
-		}
-
-		$iaCore->factory('util');
-
-		$announcementEntry = array(
-			'id' => isset($id) ? $id : 0,
-			'lang' => iaUtil::checkPostParam('lang', $announcementEntry),
-			'title' => iaUtil::checkPostParam('title', $announcementEntry),
-			'status' => iaUtil::checkPostParam('status', $announcementEntry),
-			'body' => iaUtil::checkPostParam('body', $announcementEntry),
-			'date' => iaUtil::checkPostParam('date', $announcementEntry),
-			'expire_date' => iaUtil::checkPostParam('expire_date', $announcementEntry)
-		);
-
-		if (empty($announcementEntry['date']))
-		{
-			$announcementEntry['date'] = date(iaDb::DATETIME_FORMAT);
-		}
-
-		if (isset($_POST['save']))
-		{
-			iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
-			$error = false;
-			$messages = array();
-
-			$announcementEntry['status'] = in_array($announcementEntry['status'], array(iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE)) ? $announcementEntry['status'] : iaCore::STATUS_INACTIVE;
-
-			if (!array_key_exists($announcementEntry['lang'], $iaCore->languages))
-			{
-				$announcementEntry['lang'] = $iaView->language;
-			}
-
-			if (!utf8_is_valid($announcementEntry['title']))
-			{
-				$announcementEntry['title'] = utf8_bad_replace($announcementEntry['title']);
-			}
-
-			if (!utf8_is_valid($announcementEntry['body']))
-			{
-				$announcementEntry['body'] = utf8_bad_replace($announcementEntry['body']);
-			}
-
-			if ($announcementEntry['body']){
-				$announcementEntry['body'] = iaSanitize::tags($announcementEntry['body']);
-			}
-
-			if (empty($announcementEntry['title']))
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('title_is_empty');
-			}
-
-			if (empty($announcementEntry['body']))
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('body_is_empty');
-			}
-
-			if (empty($announcementEntry['expire_date']) OR $announcementEntry['expire_date'] < date(iaDb::DATETIME_FORMAT))
-			{
-				$error = true;
-				$messages[] = iaLanguage::get('choose_expire_date');
-			}
-
-			if (!$error)
-			{
-				if (iaCore::ACTION_EDIT == $pageAction)
-				{
-					$announcementEntry['id'] = (int)$iaCore->requestPath[0];
-					$iaDb->update($announcementEntry);
-
-					$messages[] = iaLanguage::get('saved');
-				}
-				else
-				{
-					$announcementEntry['id'] = $iaDb->insert($announcementEntry);
-					$messages[] = iaLanguage::get('entry_added');
-				}
-
-				$iaView->setMessages($messages, iaView::SUCCESS);
-
-				// clear cache on changes
-				require_once IA_INCLUDES . 'phpfastcache' . IA_DS . 'phpfastcache.php';
-				$iaCache = phpFastCache('auto', array('path' => IA_CACHEDIR));
-				$iaCache->delete('announcements_entries');
-
-				if (isset($_POST['goto']))
-				{
-					$url = IA_ADMIN_URL . 'announcements/';
-					iaUtil::post_goto(array(
-						'add' => $url . 'add/',
-						'list' => $url,
-						'stay' => $url . 'edit/' . $announcementEntry['id'],
-					));
-				}
-				else
-				{
-					iaUtil::go_to(IA_ADMIN_URL . 'announcements/edit/' . $announcementEntry['id']);
-				}
-			}
-			else
-			{
-				$iaView->setMessages($messages);
-			}
-		}
-
-		$options = array('list' => 'go_to_list', 'add' => 'add_another_one', 'stay' => 'stay_here');
-		$iaView->assign('goto', $options);
-
-		$iaView->assign('entry', $announcementEntry);
-
-		$iaView->display('manage');
-	}
-}
-$iaDb->resetTable();
