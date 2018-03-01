@@ -20,19 +20,21 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @package Subrion\Plugin\Blog\Admin
  * @link https://subrion.org/
- * @author https://intelliants.com/ <support@subrion.org>
- * @license https://subrion.org/license.html
  *
  ******************************************************************************/
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
-    if ($iaView->blockExists('announcements')){
-        $iaAnnouncements = $iaCore->factoryModule('announcement', 'announcements');
+class iaAnnouncement extends abstractModuleAdmin
+{
+    protected static $_table = 'announcements';
+    protected $_itemName = 'announcement';
 
-        $entries = $iaAnnouncements->get();
+    protected $_activityLog = ['item' => 'announcement'];
 
-        $iaView->assign('announcements', $entries);
-    }
+    protected $_statuses = [iaCore::STATUS_ACTIVE, iaCore::STATUS_INACTIVE];
+
+    public $dashboardStatistics = ['icon' => 'folder', 'url' => 'announcements/'];
+
+
+
 }

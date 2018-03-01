@@ -5,11 +5,14 @@
                 <div class="ia-item__content">
                     <h5 class="ia-item__title">{$announcement.title|escape:'html'}</h5>
                     <p class="an-post__date">{$announcement.date_added|date_format:$core.config.date_format}</p>
-                    <p>{$announcement.body|escape:'html'}</p>
+                    <p>{$announcement.body}</p>
                 </div>
             </div>
         {/foreach}
     </div>
+
+    {ia_print_css files='_IA_URL_modules/announcements/templates/front/css/style'}
+
 {else}
     <p>{lang key='no_announcements_yet'}</p>
 {/if}

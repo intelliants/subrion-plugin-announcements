@@ -20,19 +20,31 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @package Subrion\Plugin\Blog\Admin
  * @link https://subrion.org/
- * @author https://intelliants.com/ <support@subrion.org>
- * @license https://subrion.org/license.html
  *
  ******************************************************************************/
 
-if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
-    if ($iaView->blockExists('announcements')){
-        $iaAnnouncements = $iaCore->factoryModule('announcement', 'announcements');
+class iaAnnouncement extends abstractModuleFront
+{
+    protected static $_table = 'announcements';
 
-        $entries = $iaAnnouncements->get();
+    protected $_itemName = 'announcement';
 
-        $iaView->assign('announcements', $entries);
+    protected $_moduleName = 'announcements';
+
+    public $coreSearchEnabled = true;
+    public $coreSearchOptions = [
+        'regularSearchFields' => ['title', 'body'],
+    ];
+
+    public function get()
+    {
+        $date = date(iaDb::DATETIME_FORMAT);
+        $sql = 'SELECT * FROM `sbr420_announcements`  WHERE `status` = "active" AND `date_expire` >= "'.$date.'" ORDER BY `date_expire` ASC';
+
+        $rows = $this->iaDb->getAll($sql);
+        $this->_processValues($rows);
+
+        return $rows;
     }
 }
