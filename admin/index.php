@@ -29,13 +29,14 @@
 
 class iaBackendController extends iaAbstractControllerModuleBackend
 {
-    protected $_name = 'announcement';
+    protected $_name = 'announcements';
 
-    protected $_table = 'announcements';
+    protected $_helperName = 'announcement';
 
     protected $_phraseAddSuccess = 'announcement_added';
 
     protected $_gridColumns = ['title', 'date_added', 'date_expire', 'status'];
+    protected $_gridFilters = ['title' => self::LIKE, 'status' => self::EQUAL];
 
     public function __construct()
     {
@@ -48,83 +49,26 @@ class iaBackendController extends iaAbstractControllerModuleBackend
         $iaView->grid('_IA_URL_modules/' . $this->getModuleName() . '/js/admin/index');
     }
 
+    protected function _entryAdd(array $entryData)
+    {
+        $entryData['date_added'] = date(iaDb::DATETIME_FORMAT);
+
+        return parent::_entryAdd($entryData);
+    }
+
     protected function _setDefaultValues(array &$entry)
     {
         $entry['title'] = $entry['body'] = '';
-        $entry['lang'] = $this->_iaCore->iaView->language;
-        $entry['date_added'] = $entry['date_expire'] = date(iaDb::DATETIME_FORMAT);
+        $entry['date_added'] = date(iaDb::DATETIME_FORMAT);
+        $entry['date_expire'] = date(iaDb::DATETIME_FORMAT, time() + 86400);
+        $entry['member_id'] = iaUsers::getIdentity() -> id;
         $entry['status'] = iaCore::STATUS_ACTIVE;
-        $entry['member_id'] = iaUsers::getIdentity()->id;
-    }
-
-    protected function _preSaveEntry(array &$entry, array $data, $action)
-    {
-        parent::_preSaveEntry($entry, $data, $action);
-
-        iaUtil::loadUTF8Functions('ascii', 'validation', 'bad', 'utf8_to_ascii');
-
-        if (!array_key_exists($entry['lang'], $this->_iaCore->languages)) {
-            $entry['lang'] = $this->_iaCore->iaView->language;
-        }
-
-        if (!utf8_is_valid($entry['title'])) {
-            $entry['title'] = utf8_bad_replace($entry['title']);
-        }
-
-        if (!utf8_is_valid($entry['body'])) {
-            $entry['body'] = utf8_bad_replace($entry['body']);
-        }
-
-        if ($entry['body']) {
-            $entry['body'] = iaSanitize::tags($entry['body']);
-        }
-
-        if (empty($entry['title'])) {
-            $this->addMessage('title_is_empty');
-        }
-
-        if (empty($entry['body'])) {
-            $this->addMessage(iaLanguage::getf('field_is_empty', ['field' => iaLanguage::get('body')]), false);
-        }
-
-        if (empty($entry['date_expire']) || $entry['date_expire'] < date(iaDb::DATETIME_FORMAT)) {
-            $this->addMessage('choose_date_expire');
-        }
-
-        if (empty($entry['date_added'])) {
-            $entry['date_added'] = date(iaDb::DATETIME_FORMAT);
-        }
-
-        unset($entry['owner']);
-
-        return !$this->getMessages();
-    }
-
-    protected function _postSaveEntry(array &$entry, array $data, $action)
-    {
-        $iaCache = $this->_iaCore->factory('cache');
-        $iaCache->remove('announcements');
-
-        $iaLog = $this->_iaCore->factory('log');
-
-        $actionCode = (iaCore::ACTION_ADD == $action)
-            ? iaLog::ACTION_CREATE
-            : iaLog::ACTION_UPDATE;
-        $params = [
-            'module' => 'announcements',
-            'item' => 'announcement',
-            'name' => $entry['title'],
-            'id' => $this->getEntryId(),
-        ];
-
-        $iaLog->write($actionCode, $params);
     }
 
     protected function _assignValues(&$iaView, array &$entryData)
     {
-        $iaUsers = $this->_iaCore->factory('users');
-        $owner = empty($entryData['member_id']) ? iaUsers::getIdentity(true) : $iaUsers->getInfo($entryData['member_id']);
+        parent::_assignValues($iaView, $entryData);
 
-        $entryData['owner'] = $owner['fullname'] . " ({$owner['email']})";
+        unset($entryData['date_added']);
     }
 }
