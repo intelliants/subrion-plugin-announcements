@@ -62,7 +62,7 @@ class iaBackendController extends iaAbstractControllerModuleBackend
     }
 
     protected function _setDefaultValues(array &$entry)
-    {
+    { 
         $entry['title'] = $entry['body'] = '';
         $entry['date_added'] = date(iaDb::DATETIME_FORMAT);
         $entry['date_expire'] = date(iaDb::DATETIME_FORMAT, time() + 86400);
