@@ -55,7 +55,7 @@ class iaBackendController extends iaAbstractControllerModuleBackend
 
         return parent::_entryAdd($entryData);
     }
-
+ 
     public function updateCounters($entryId, array $entryData, $action, $previousData = null)
     {
         $this->_iaCore->factory('cache')->remove('announcements');
