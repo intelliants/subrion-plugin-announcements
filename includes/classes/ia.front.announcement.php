@@ -39,8 +39,20 @@ class iaAnnouncement extends abstractModuleFront
 
     public function get()
     {
+        $limit = $this->iaCore->get('announcements_limit');
+
+        if('expired' == $this->iaCore->get('announcements_order')){
+            $order = 'date_expire';
+            $order_dir = 'ASC';
+        }
+
+        if('created' == $this->iaCore->get('announcements_order')){
+            $order = 'date_added';
+            $order_dir = 'DESC';
+        }
+
         $date = date(iaDb::DATETIME_FORMAT);
-        $sql = 'SELECT * FROM `sbr420_announcements`  WHERE `status` = "active" AND `date_expire` >= "'.$date.'" ORDER BY `date_expire` ASC';
+        $sql = 'SELECT * FROM `sbr420_announcements`  WHERE `status` = "active" AND `date_expire` >= "'.$date.'" ORDER BY `'.$order.'` '.$order_dir.' LIMIT 0,'.$limit.'' ;
 
         $rows = $this->iaDb->getAll($sql);
         $this->_processValues($rows);

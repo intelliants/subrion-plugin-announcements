@@ -35,7 +35,7 @@
     <configgroup name="announcements">Announcements</configgroup>
     <config group="announcements" name="announcements" type="divider">General</config>
     <config group="announcements" name="announcements_limit" type="text" description="Number of displayed entries on Frond End Block">6</config>
-    <config group="announcements" name="announcements_order" type="select" values="random,date" description="Entries order by">date</config>
+    <config group="announcements" name="announcements_order" type="select" values="expired,created" description="Entries order by">date</config>
 
     <fields_groups>
         <group item="announcement" name="general" title="General"><![CDATA[]]></group>

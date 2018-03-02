@@ -11,8 +11,6 @@
         {/foreach}
     </div>
 
-    {ia_print_css files='_IA_URL_modules/announcements/templates/front/css/style'}
-
 {else}
     <p>{lang key='no_announcements_yet'}</p>
 {/if}

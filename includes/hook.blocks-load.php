@@ -29,10 +29,18 @@
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     if ($iaView->blockExists('announcements')){
+
         $iaAnnouncements = $iaCore->factoryModule('announcement', 'announcements');
 
-        $entries = $iaAnnouncements->get();
+        $announcements = $this->iaCache->get('announcements', 24 * 3600, true);
 
-        $iaView->assign('announcements', $entries);
+        if(false === $announcements){
+            $announcements = $iaAnnouncements->get();
+
+            $this->iaCache->write('announcements', $announcements);
+        }
+
+        $iaView->assign('announcements', $announcements);
+        $iaView->add_css('_IA_URL_modules/announcements/templates/front/css/style');
     }
 }
