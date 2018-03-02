@@ -36,6 +36,7 @@ class iaBackendController extends iaAbstractControllerModuleBackend
     protected $_phraseAddSuccess = 'announcement_added';
 
     protected $_gridColumns = ['title', 'date_added', 'date_expire', 'status'];
+    protected $_gridFilters = ['title' => self::LIKE, 'status' => self::EQUAL];
 
     public function __construct()
     {
@@ -58,9 +59,16 @@ class iaBackendController extends iaAbstractControllerModuleBackend
     protected function _setDefaultValues(array &$entry)
     {
         $entry['title'] = $entry['body'] = '';
+        $entry['date_added'] = date(iaDb::DATETIME_FORMAT);
         $entry['date_expire'] = date(iaDb::DATETIME_FORMAT, time() + 86400);
         $entry['member_id'] = iaUsers::getIdentity() -> id;
         $entry['status'] = iaCore::STATUS_ACTIVE;
     }
 
+    protected function _assignValues(&$iaView, array &$entryData)
+    {
+        parent::_assignValues($iaView, $entryData);
+
+        unset($entryData['date_added']);
+    }
 }

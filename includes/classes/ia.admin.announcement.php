@@ -35,6 +35,4 @@ class iaAnnouncement extends abstractModuleAdmin
 
     public $dashboardStatistics = ['icon' => 'folder', 'url' => 'announcements/'];
 
-
-
 }
