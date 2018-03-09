@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,10 +20,7 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @package Subrion\Plugin\Blog\Admin
  * @link https://subrion.org/
- * @author https://intelliants.com/ <support@subrion.org>
- * @license https://subrion.org/license.html
  *
  ******************************************************************************/
 
@@ -55,18 +52,18 @@ class iaBackendController extends iaAbstractControllerModuleBackend
 
         return parent::_entryAdd($entryData);
     }
- 
+
     public function updateCounters($entryId, array $entryData, $action, $previousData = null)
     {
         $this->_iaCore->factory('cache')->remove('announcements');
     }
 
     protected function _setDefaultValues(array &$entry)
-    { 
+    {
         $entry['title'] = $entry['body'] = '';
         $entry['date_added'] = date(iaDb::DATETIME_FORMAT);
         $entry['date_expire'] = date(iaDb::DATETIME_FORMAT, time() + 86400);
-        $entry['member_id'] = iaUsers::getIdentity() -> id;
+        $entry['member_id'] = iaUsers::getIdentity()->id;
         $entry['status'] = iaCore::STATUS_ACTIVE;
     }
 

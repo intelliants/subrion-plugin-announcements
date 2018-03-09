@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -20,21 +20,17 @@
  * along with Subrion. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * @package Subrion\Plugin\Blog\Admin
  * @link https://subrion.org/
- * @author https://intelliants.com/ <support@subrion.org>
- * @license https://subrion.org/license.html
  *
  ******************************************************************************/
 
 if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
-    if ($iaView->blockExists('announcements')){
-
+    if ($iaView->blockExists('announcements')) {
         $iaAnnouncements = $iaCore->factoryModule('announcement', 'announcements');
 
         $announcements = $this->iaCache->get('announcements', 24 * 3600, true);
 
-        if(false === $announcements){
+        if (false === $announcements) {
             $announcements = $iaAnnouncements->get();
 
             $this->iaCache->write('announcements', $announcements);
