@@ -2,7 +2,7 @@
 /******************************************************************************
  *
  * Subrion - open source content management system
- * Copyright (C) 2017 Intelliants, LLC <https://intelliants.com>
+ * Copyright (C) 2018 Intelliants, LLC <https://intelliants.com>
  *
  * This file is part of Subrion.
  *
@@ -40,19 +40,30 @@ class iaAnnouncement extends abstractModuleFront
     public function get()
     {
         $limit = $this->iaCore->get('announcements_limit');
-
-        if('expired' == $this->iaCore->get('announcements_order')){
-            $order = 'date_expire';
-            $order_dir = 'ASC';
-        }
-
-        if('created' == $this->iaCore->get('announcements_order')){
-            $order = 'date_added';
-            $order_dir = 'DESC';
-        }
-
         $date = date(iaDb::DATETIME_FORMAT);
-        $sql = 'SELECT * FROM `sbr420_announcements`  WHERE `status` = "active" AND `date_expire` >= "'.$date.'" ORDER BY `'.$order.'` '.$order_dir.' LIMIT 0,'.$limit.'' ;
+        $where = '`date_expire` >= ' . "'{$date}'";
+        $status = "`status` = 'active'";
+
+        if ('expired' == $this->iaCore->get('announcements_order')) {
+            $order = ' `date_expire` ASC ';
+        } else {
+            $order = ' `date_added` DESC ';
+        }
+
+        $sql = <<<SQL
+SELECT SQL_CALC_FOUND_ROWS *
+FROM :table_announcements
+WHERE :where AND :status
+ORDER BY :order 
+LIMIT 0, :limit
+SQL;
+        $sql = iaDb::printf($sql, [
+            'table_announcements' => self::getTable(true),
+            'where' => $where,
+            'order' => $order,
+            'limit' => $limit,
+            'status' => $status
+        ]);
 
         $rows = $this->iaDb->getAll($sql);
         $this->_processValues($rows);

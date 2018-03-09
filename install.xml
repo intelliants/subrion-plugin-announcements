@@ -4,9 +4,9 @@
     <summary>This plugin allows administrators to leave their messages/announcements to the Front End Block</summary>
     <author>Intelliants LLC</author>
     <contributor>Intelliants LLC</contributor>
-    <version>4.1.0</version>
-    <date>2017-08-21</date>
-    <compatibility>4.1</compatibility>
+    <version>4.2.0</version>
+    <date>2018-03-09</date>
+    <compatibility>4.2</compatibility>
 
     <items>
         <item>announcement</item>
@@ -35,7 +35,7 @@
     <configgroup name="announcements">Announcements</configgroup>
     <config group="announcements" name="announcements" type="divider">General</config>
     <config group="announcements" name="announcements_limit" type="text" description="Number of displayed entries on Frond End Block">6</config>
-    <config group="announcements" name="announcements_order" type="select" values="expired,created" description="Entries order by">date</config>
+    <config group="announcements" name="announcements_order" type="select" values="expired,created" description="Entries order by">created</config>
 
     <fields_groups>
         <group item="announcement" name="general" title="General"><![CDATA[]]></group>
