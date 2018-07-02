@@ -55,7 +55,10 @@ class iaBackendController extends iaAbstractControllerModuleBackend
 
     public function updateCounters($entryId, array $entryData, $action, $previousData = null)
     {
-        $this->_iaCore->factory('cache')->remove('announcements');
+        $iaCache = $this->_iaCore->factory('cache');
+        foreach ($this->_iaCore->languages as $iso => $language) {
+            $iaCache->remove('announcements_' . $iso);
+        }
     }
 
     protected function _setDefaultValues(array &$entry)

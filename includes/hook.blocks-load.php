@@ -28,12 +28,12 @@ if (iaView::REQUEST_HTML == $iaView->getRequestType()) {
     if ($iaView->blockExists('announcements')) {
         $iaAnnouncements = $iaCore->factoryModule('announcement', 'announcements');
 
-        $announcements = $this->iaCache->get('announcements', 24 * 3600, true);
+        $announcements = $this->iaCache->get('announcements', 24 * 3600, true, true);
 
         if (false === $announcements) {
             $announcements = $iaAnnouncements->get();
 
-            $this->iaCache->write('announcements', $announcements);
+            $this->iaCache->write('announcements', $announcements, true);
         }
 
         $iaView->assign('announcements', $announcements);
